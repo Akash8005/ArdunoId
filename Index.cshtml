@@ -1,0 +1,57 @@
+﻿@page "/"
+@model ArduinoWebIDE.Pages.IndexModel
+@{
+    ViewData["Title"] = "Arduino Web IDE";
+}
+
+<h1>Arduino Web IDE</h1>
+
+<textarea id="codeArea" rows="15" cols="80">
+void setup() {
+  pinMode(13, OUTPUT);
+}
+
+void loop() {
+  digitalWrite(13, HIGH);
+  delay(1000);
+  digitalWrite(13, LOW);
+  delay(1000);
+}
+</textarea>
+<br />
+<button onclick="uploadCode()">Upload to Arduino</button>
+
+<pre id="outputLog" style="margin-top: 20px; background-color: #f4f4f4; padding: 10px; border-radius: 5px;"></pre>
+
+<script>
+    function uploadCode() {
+        const code = document.getElementById("codeArea").value;
+        const output = document.getElementById("outputLog");
+
+        output.textContent = "⏳ Uploading to Arduino...";
+
+        const payload = { code: code };
+
+        console.log("📦 Sending payload:", payload);
+
+        fetch('?handler=Upload', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(res => {
+            if (!res.ok) throw new Error(`Server error ${res.status}`);
+            return res.text();
+        })
+        .then(msg => {
+            output.textContent = msg;
+            console.log("✅ Response received:", msg);
+        })
+        .catch(err => {
+            output.textContent = "❌ Upload failed. Check browser console.";
+            console.error("❌ Upload error:", err);
+        });
+    }
+</script>
